@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
+import Button from "./components/Button";
+import ButtonSecond from "./components/Button-Second";
 import WeatherCanvas from "./components/WeatherCanvas";
 import { getCityCoordinates, getWeatherByCoords, normalizeWeather } from "./weatherApi";
 
@@ -96,6 +98,14 @@ export default function App() {
 
         {!error && weather && (
           <>
+            <section className="reveal-1">
+              <Button mode={visualMode} detail={weather.current.label} />
+            </section>
+
+            <section className="reveal-1">
+              <ButtonSecond mode={visualMode} detail={weather.current.label} />
+            </section>
+
             <section className="temperature-section reveal-1">
               <h2>
                 {weather.current.temp}
