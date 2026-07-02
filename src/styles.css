@@ -7,6 +7,47 @@
   --line: rgba(255, 255, 255, 0.16);
   --danger: #ff6c73;
   --shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
+
+  --wc-sky-clear-a: #ffbb5c;
+  --wc-sky-clear-b: #f0723d;
+  --wc-haze-clear: rgba(255, 218, 137, 0.24);
+  --wc-sky-cloudy-a: #597190;
+  --wc-sky-cloudy-b: #29364f;
+  --wc-haze-cloudy: rgba(197, 224, 255, 0.2);
+  --wc-sky-rainy-a: #304968;
+  --wc-sky-rainy-b: #101a2a;
+  --wc-haze-rainy: rgba(100, 154, 255, 0.14);
+  --wc-sky-snowy-a: #a3bedf;
+  --wc-sky-snowy-b: #6e86a5;
+  --wc-haze-snowy: rgba(255, 255, 255, 0.2);
+  --wc-sky-stormy-a: #222640;
+  --wc-sky-stormy-b: #080a17;
+  --wc-haze-stormy: rgba(144, 168, 255, 0.1);
+
+  --wc-cloud-stormy: rgba(197, 208, 224, 0.24);
+  --wc-cloud-rainy: rgba(219, 231, 245, 0.28);
+  --wc-cloud-default: rgba(241, 248, 255, 0.28);
+  --wc-cloud-outer: rgba(170, 187, 210, 0.04);
+  --wc-cloud-shadow: rgba(49, 64, 89, 0.16);
+
+  --wc-ground-top: rgba(255, 255, 255, 0.05);
+  --wc-ground-bottom: rgba(0, 0, 0, 0.28);
+
+  --wc-sun-halo-start: rgba(255, 250, 190, 0.35);
+  --wc-sun-halo-end: rgba(255, 210, 60, 0);
+  --wc-sun-core-inner: #fff9d7;
+  --wc-sun-core-outer: #ffb400;
+  --wc-sun-ray-stroke: rgba(255, 223, 150, 0.35);
+
+  --wc-moon-halo-start: rgba(210, 224, 255, 0.38);
+  --wc-moon-halo-end: rgba(189, 214, 255, 0);
+  --wc-moon-body: #eef3ff;
+  --wc-moon-shadow: rgba(165, 185, 220, 0.44);
+
+  --wc-rain-stroke: rgba(150, 198, 255, 0.72);
+  --wc-snow-fill: rgba(240, 250, 255, 0.86);
+  --wc-lightning-flash: rgba(255, 255, 255, 0.2);
+  --wc-lightning-stroke: rgba(210, 226, 255, 0.9);
 }
 
 * {
