@@ -1,9 +1,9 @@
 const WEATHER_BUTTON_COPY = {
-  clear: "Sunny right now",
-  cloudy: "Cloudy right now",
-  rainy: "Rainy right now",
-  snowy: "Snowy right now",
-  stormy: "Stormy right now",
+  clear: "Sunlit conditions",
+  cloudy: "Cloud-layer conditions",
+  rainy: "Rainfall conditions",
+  snowy: "Snowfall conditions",
+  stormy: "Storm conditions",
 };
 
 function getButtonCopy(mode) {
