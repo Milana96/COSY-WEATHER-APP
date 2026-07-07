@@ -1,9 +1,9 @@
 import { useEffect, useRef } from "react";
-import { createDrawEngine } from "./helpers/weatherCanvas/drawEngine";
-import { CANVAS_NUMBERS, WEATHER_CODES } from "./helpers/weatherCanvas/constants";
-import { createInitialSceneState, resizeScene } from "./helpers/weatherCanvas/sceneState";
-import { runVisualStrategy } from "./helpers/weatherCanvas/strategies";
-import { buildCanvasTheme } from "./helpers/weatherCanvas/theme";
+import { createDrawEngine } from "../../helpers/weatherCanvas/drawEngine";
+import { CANVAS_NUMBERS, WEATHER_CODES } from "../../helpers/weatherCanvas/constants";
+import { createInitialSceneState, resizeScene } from "../../helpers/weatherCanvas/sceneState";
+import { runVisualStrategy } from "../../helpers/weatherCanvas/strategies";
+import { buildCanvasTheme } from "../../helpers/weatherCanvas/theme";
 
 export default function WeatherCanvas({ visual, weatherCode = 0, isDay = 1, sceneSeed = "0" }) {
   const canvasRef = useRef(null);

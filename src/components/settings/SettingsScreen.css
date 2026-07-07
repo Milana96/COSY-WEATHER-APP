@@ -1,0 +1,74 @@
+.settings-app .left-column {
+  min-height: 68vh;
+}
+
+.settings-panel {
+  gap: 0.8rem;
+}
+
+.settings-group {
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 14px;
+  background: rgba(8, 20, 34, 0.56);
+  padding: 0.75rem;
+  display: grid;
+  gap: 0.58rem;
+}
+
+.settings-group h2 {
+  margin: 0;
+  font-size: 0.98rem;
+}
+
+.settings-label {
+  font-size: 0.82rem;
+  opacity: 0.76;
+}
+
+.settings-toggle-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+.settings-pill {
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  padding: 0.56rem 0.68rem;
+  background: rgba(7, 16, 27, 0.55);
+  color: inherit;
+  cursor: pointer;
+  font-size: 0.84rem;
+}
+
+.settings-pill.is-active {
+  border-color: rgba(255, 200, 74, 0.55);
+  background: linear-gradient(145deg, rgba(255, 200, 74, 0.3), rgba(84, 217, 255, 0.2));
+}
+
+.settings-select {
+  width: 100%;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(8, 20, 34, 0.65);
+  color: inherit;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  padding: 0.62rem 0.7rem;
+}
+
+.settings-select:focus {
+  outline: 2px solid rgba(84, 217, 255, 0.35);
+  border-color: transparent;
+}
+
+body.theme-light .settings-select,
+body.theme-light .settings-group {
+  background: rgba(255, 255, 255, 0.68);
+  border-color: rgba(24, 52, 89, 0.15);
+}
+
+@media (max-width: 980px) {
+  .settings-toggle-row {
+    grid-template-columns: 1fr;
+  }
+}
