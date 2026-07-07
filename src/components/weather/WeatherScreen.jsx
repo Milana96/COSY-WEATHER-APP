@@ -1,4 +1,3 @@
-import { Link } from "react-router-dom";
 import Button from "./Button";
 import ButtonSecond from "./Button-Second";
 import StatCard from "./StatCard";
@@ -47,15 +46,7 @@ export default function WeatherScreen({ settings }) {
         </footer>
       </section>
 
-      <aside className="right-column panel">
-        <div className="top-actions">
-          <Link to="/settings" className="icon-link" aria-label="Open settings">
-            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-              <path d="M20 13.1v-2.2l-2-0.5c-0.2-0.6-0.5-1.2-0.9-1.8l1.1-1.8-1.5-1.6-1.9 1c-0.5-0.3-1.1-0.5-1.7-0.7L12.6 3h-2.2l-0.5 2.1c-0.6 0.2-1.2 0.4-1.7 0.7l-1.9-1-1.6 1.6 1.1 1.8c-0.4 0.6-0.7 1.2-0.9 1.8L3 10.9v2.2l2 0.5c0.2 0.6 0.5 1.2 0.9 1.8l-1.1 1.8 1.6 1.6 1.9-1c0.5 0.3 1.1 0.5 1.7 0.7l0.5 2.1h2.2l0.5-2.1c0.6-0.2 1.2-0.4 1.7-0.7l1.9 1 1.5-1.6-1.1-1.8c0.4-0.6 0.7-1.2 0.9-1.8l2-0.5zM11.5 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7z" />
-            </svg>
-            <span>Settings</span>
-          </Link>
-        </div>
+      <aside className="right-column panel weather-panel">
 
         <form className="search-form" onSubmit={onSubmit}>
           <label htmlFor="city">Find city</label>

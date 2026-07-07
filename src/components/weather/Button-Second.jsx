@@ -1,29 +1,29 @@
 const WEATHER_MODE_COPY = {
   clear: {
-    title: "Button-Second: Sun Mode",
+    title: "Solar mode",
     detailPrefix: "Bright skies and warm light",
   },
   cloudy: {
-    title: "Button-Second: Cloud Mode",
+    title: "Cloud mode",
     detailPrefix: "Soft clouds moving in",
   },
   rainy: {
-    title: "Button-Second: Rain Mode",
+    title: "Rain mode",
     detailPrefix: "Rain is active right now",
   },
   snowy: {
-    title: "Button-Second: Snow Mode",
+    title: "Snow mode",
     detailPrefix: "Snowfall conditions detected",
   },
   stormy: {
-    title: "Button-Second: Storm Mode",
+    title: "Storm mode",
     detailPrefix: "Storm conditions in the area",
   },
 };
 
 function getModeCopy(mode) {
   return WEATHER_MODE_COPY[mode] ?? {
-    title: "Button-Second: Live Mode",
+    title: "Adaptive mode",
     detailPrefix: "Current weather conditions",
   };
 }

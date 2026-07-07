@@ -1,4 +1,3 @@
-import { Link } from "react-router-dom";
 import WeatherCanvas from "../weather/WeatherCanvas";
 import useSettingsForm from "../../hooks/useSettingsForm";
 import "./SettingsScreen.css";
@@ -24,15 +23,6 @@ export default function SettingsScreen({ settings, onUpdateSettings }) {
       </section>
 
       <aside className="right-column panel settings-panel">
-        <div className="top-actions">
-          <Link to="/" className="icon-link" aria-label="Back to weather">
-            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-              <path d="M15.5 4.5 8 12l7.5 7.5-1.6 1.6L4.8 12l9.1-9.1z" />
-            </svg>
-            <span>Weather</span>
-          </Link>
-        </div>
-
         <section className="settings-group reveal-1">
           <h2>Temperature Unit</h2>
           <div className="settings-toggle-row">
