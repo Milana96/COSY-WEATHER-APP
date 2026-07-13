@@ -1,0 +1,85 @@
+.planner-panel {
+  gap: 0.9rem;
+}
+
+.planner-card {
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 14px;
+  background: rgba(8, 20, 34, 0.58);
+  padding: 0.8rem;
+  display: grid;
+  gap: 0.55rem;
+}
+
+.planner-kicker {
+  margin: 0;
+  font-size: 0.74rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent-2);
+  opacity: 0.95;
+}
+
+.planner-card h2,
+.planner-card h3 {
+  margin: 0;
+}
+
+.planner-card h2 {
+  font-size: clamp(1.8rem, 5vw, 2.4rem);
+  line-height: 1;
+}
+
+.planner-copy {
+  margin: 0;
+  opacity: 0.86;
+}
+
+.planner-list {
+  margin: 0;
+  padding-left: 1.1rem;
+  display: grid;
+  gap: 0.28rem;
+}
+
+.planner-days {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.planner-day-item {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 11px;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 0.58rem 0.66rem;
+  display: grid;
+  gap: 0.38rem;
+}
+
+.planner-day-item header {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.7rem;
+  align-items: baseline;
+}
+
+.planner-day-item header span {
+  opacity: 0.75;
+  font-size: 0.86rem;
+}
+
+.planner-day-item p {
+  margin: 0;
+  font-size: 0.9rem;
+  opacity: 0.86;
+}
+
+body.theme-light .planner-card {
+  background: rgba(255, 255, 255, 0.68);
+  border-color: rgba(24, 52, 89, 0.15);
+}
+
+body.theme-light .planner-day-item {
+  border-color: rgba(24, 52, 89, 0.14);
+  background: rgba(255, 255, 255, 0.6);
+}

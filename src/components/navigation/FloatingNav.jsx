@@ -16,6 +16,14 @@ function SettingsIcon() {
   );
 }
 
+function PlannerIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <path d="M4 4.7A1.7 1.7 0 0 1 5.7 3h12.6A1.7 1.7 0 0 1 20 4.7v14.6a1.7 1.7 0 0 1-1.7 1.7H5.7A1.7 1.7 0 0 1 4 19.3zm2 1.3v12h12V6zm2 2h8v2H8zm0 4h5v2H8zm0 4h8v2H8z" />
+    </svg>
+  );
+}
+
 export default function FloatingNav() {
   return (
     <nav className="floating-nav" aria-label="Primary navigation">
@@ -33,6 +41,14 @@ export default function FloatingNav() {
         aria-label="Settings"
       >
         <SettingsIcon />
+      </NavLink>
+
+      <NavLink
+        to="/planner"
+        className={({ isActive }) => `floating-nav__item ${isActive ? "is-active" : ""}`}
+        aria-label="Daily planner"
+      >
+        <PlannerIcon />
       </NavLink>
     </nav>
   );
