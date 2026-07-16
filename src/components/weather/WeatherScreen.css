@@ -279,6 +279,82 @@
   padding: 0.6rem 0.7rem;
 }
 
+.weather-debug-card {
+  border: 1px solid rgba(135, 179, 233, 0.36);
+  border-radius: 1rem;
+  background: linear-gradient(155deg, rgba(26, 62, 102, 0.3), rgba(12, 29, 49, 0.38));
+  padding: 0.75rem;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.weather-debug-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.weather-debug-card__header h3 {
+  margin: 0;
+  font-size: 0.85rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  opacity: 0.95;
+}
+
+.weather-debug-pill {
+  border-radius: 999px;
+  font-size: 0.67rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.2rem 0.5rem;
+  border: 1px solid transparent;
+}
+
+.weather-debug-pill.is-mock {
+  background: rgba(115, 227, 175, 0.2);
+  border-color: rgba(125, 239, 186, 0.6);
+  color: #d6ffeb;
+}
+
+.weather-debug-pill.is-live {
+  background: rgba(250, 179, 88, 0.22);
+  border-color: rgba(252, 194, 120, 0.6);
+  color: #ffe6c9;
+}
+
+.weather-debug-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+.weather-debug-grid p {
+  margin: 0;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 0.75rem;
+  padding: 0.45rem 0.5rem;
+  background: rgba(255, 255, 255, 0.03);
+  display: grid;
+  gap: 0.12rem;
+}
+
+.weather-debug-grid span {
+  font-size: 0.68rem;
+  opacity: 0.75;
+}
+
+.weather-debug-grid strong {
+  font-size: 0.84rem;
+}
+
+@media (max-width: 500px) {
+  .weather-debug-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 body.theme-light .tiny-card,
 body.theme-light .stat-card,
 body.theme-light .day-item {
@@ -289,4 +365,14 @@ body.theme-light .day-item {
 body.theme-light .daily-list {
   background: rgba(255, 255, 255, 0.56);
   border-color: rgba(24, 52, 89, 0.15);
+}
+
+body.theme-light .weather-debug-card {
+  background: linear-gradient(155deg, rgba(185, 220, 255, 0.66), rgba(157, 193, 232, 0.58));
+  border-color: rgba(24, 52, 89, 0.2);
+}
+
+body.theme-light .weather-debug-grid p {
+  background: rgba(255, 255, 255, 0.72);
+  border-color: rgba(24, 52, 89, 0.14);
 }

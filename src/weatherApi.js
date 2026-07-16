@@ -40,6 +40,35 @@ const weatherLabelMap = {
   99: "Strong thunderstorm with hail",
 };
 
+const normalizeTimezone = (timezone) => {
+  if (!timezone || typeof timezone !== "string") return "UTC";
+
+  try {
+    Intl.DateTimeFormat("en-US", { timeZone: timezone }).format(new Date());
+    return timezone;
+  } catch {
+    return "UTC";
+  }
+};
+
+const formatUnixTime = (unixSeconds, timezone, options) => {
+  const dt = new Date(unixSeconds * 1000);
+  return new Intl.DateTimeFormat("en-US", {
+    timeZone: normalizeTimezone(timezone),
+    ...options,
+  }).format(dt);
+};
+
+const mapOpenWeatherVisual = (weatherId) => {
+  if (weatherId >= 200 && weatherId < 300) return "stormy";
+  if (weatherId >= 300 && weatherId < 600) return "rainy";
+  if (weatherId >= 600 && weatherId < 700) return "snowy";
+  if (weatherId >= 700 && weatherId < 800) return "cloudy";
+  if (weatherId === 800) return "clear";
+  if (weatherId > 800 && weatherId < 900) return "cloudy";
+  return "clear";
+};
+
 const findVisualWeather = (code) => {
   if (weatherCodeMap.rainy.includes(code)) return "rainy";
   if (weatherCodeMap.cloudy.includes(code)) return "cloudy";
@@ -148,6 +177,75 @@ export function normalizeWeather(geo, weatherRaw) {
         hour: "2-digit",
         minute: "2-digit",
       }),
+    },
+    dailyForecast,
+    hourlyForecast,
+  };
+}
+
+export function normalizeWeatherFromSimulation(simRaw, overrideCityName = "") {
+  const timezone = normalizeTimezone(simRaw?.timezone ?? "UTC");
+  const current = simRaw?.current ?? {};
+  const currentWeather = Array.isArray(current.weather) ? current.weather[0] ?? {} : {};
+  const weatherId = Number.isFinite(currentWeather.id) ? currentWeather.id : 800;
+  const daily = Array.isArray(simRaw?.daily) ? simRaw.daily : [];
+  const hourly = Array.isArray(simRaw?.hourly) ? simRaw.hourly : [];
+  const nowUnix = Math.floor(Date.now() / 1000);
+
+  const currentHourIndex = hourly.findIndex((entry) =>
+    Number.isFinite(entry?.dt) ? entry.dt >= nowUnix : false
+  );
+
+  const startIdx = currentHourIndex >= 0 ? currentHourIndex : 0;
+
+  const hourlyForecast = hourly.slice(startIdx, startIdx + 8).map((entry, idx) => ({
+    label:
+      idx === 0
+        ? "Now"
+        : formatUnixTime(entry.dt, timezone, {
+            hour: "numeric",
+          }),
+    temp: Math.round(entry.temp ?? current.temp ?? 0),
+    code: Number.isFinite(entry?.weather?.[0]?.id) ? entry.weather[0].id : weatherId,
+  }));
+
+  const dailyForecast = daily.slice(0, 7).map((entry) => ({
+    dayLabel: formatUnixTime(entry.dt, timezone, { weekday: "short" }),
+    max: Math.round(entry?.temp?.max ?? entry?.temp?.day ?? 0),
+    min: Math.round(entry?.temp?.min ?? entry?.temp?.night ?? 0),
+  }));
+
+  return {
+    city: overrideCityName || simRaw?.city?.name || "Simulation City",
+    country: simRaw?.city?.country || "--",
+    latitude: simRaw?.lat ?? 0,
+    longitude: simRaw?.lon ?? 0,
+    timezone,
+    current: {
+      temp: Math.round(current.temp ?? 0),
+      feelsLike: Math.round(current.feels_like ?? current.temp ?? 0),
+      weatherCode: weatherId,
+      label: currentWeather.description ?? currentWeather.main ?? "Simulated weather",
+      visual: mapOpenWeatherVisual(weatherId),
+      humidity: Math.round(current.humidity ?? 0),
+      wind: Math.round(current.wind_speed ?? 0),
+      isDay: 1,
+      sunrise: formatUnixTime(
+        Number.isFinite(current.sunrise) ? current.sunrise : nowUnix,
+        timezone,
+        {
+          hour: "2-digit",
+          minute: "2-digit",
+        }
+      ),
+      sunset: formatUnixTime(
+        Number.isFinite(current.sunset) ? current.sunset : nowUnix,
+        timezone,
+        {
+          hour: "2-digit",
+          minute: "2-digit",
+        }
+      ),
     },
     dailyForecast,
     hourlyForecast,
