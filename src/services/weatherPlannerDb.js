@@ -1,14 +1,5 @@
 import {
-  activitiesStore,
-  plannerEntriesStore,
-  readRecord,
-  savedLocationsStore,
-  userPreferencesStore,
-  writeRecord,
-} from "../db/client";
-import {
   DEFAULT_SETTINGS,
-  SETTINGS_STORAGE_KEY,
   TEMP_UNITS,
   THEMES,
   WIND_UNITS,
@@ -20,6 +11,7 @@ const ACTIVITIES_KEY = "catalog";
 const PLANNER_ENTRIES_KEY = "list";
 
 const WEATHER_CONDITIONS = ["sunny", "rainy", "cloudy", "snowy"];
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "/api";
 
 const DEFAULT_ACTIVITY_CATALOG = [
   { id: "act-run", name: "Go for a run", idealWeatherCondition: "sunny", isOutdoor: true },
@@ -53,10 +45,18 @@ const isString = (value) => typeof value === "string";
 
 const sanitizeTheme = (theme) => (THEMES.includes(theme) || theme === "system" ? theme : DEFAULT_SETTINGS.theme);
 
+const extractId = (value, fallback = "") => {
+  if (!value) return fallback;
+  if (isString(value)) return value;
+  if (isString(value.id)) return value.id;
+  if (isString(value._id)) return value._id;
+  return fallback;
+};
+
 const sanitizeUserPreferences = (value = {}) => {
   const source = value ?? {};
   return {
-    id: isString(source.id) && source.id.trim() ? source.id : USER_PREFERENCES_KEY,
+    id: extractId(source, USER_PREFERENCES_KEY),
     temperatureUnit: TEMP_UNITS.includes(source.temperatureUnit)
       ? source.temperatureUnit
       : DEFAULT_SETTINGS.temperatureUnit,
@@ -71,59 +71,98 @@ const sanitizeUserPreferences = (value = {}) => {
   };
 };
 
-const readLegacySettings = () => {
-  if (typeof window === "undefined") return null;
-
-  try {
-    const raw = window.localStorage.getItem(SETTINGS_STORAGE_KEY);
-    if (!raw) return null;
-    const parsed = JSON.parse(raw);
-    return sanitizeUserPreferences(parsed);
-  } catch {
-    return null;
-  }
-};
-
 const sanitizeCondition = (condition) => {
   const next = isString(condition) ? condition.toLowerCase().trim() : "";
   return WEATHER_CONDITIONS.includes(next) ? next : "cloudy";
 };
 
-const sanitizeSavedLocation = (location) => ({
-  id: isString(location.id) && location.id.trim() ? location.id : makeId(),
-  cityName: isString(location.cityName) ? location.cityName.trim() : "",
-  latitude: Number(location.latitude),
-  longitude: Number(location.longitude),
-  addedAt:
-    isString(location.addedAt) && location.addedAt.trim()
-      ? location.addedAt
-      : new Date().toISOString(),
-});
+const sanitizeSavedLocation = (location = {}) => {
+  const source = location ?? {};
+  return {
+    id: extractId(source, makeId()),
+    cityName: isString(source.cityName) ? source.cityName.trim() : "",
+    latitude: Number(source.latitude),
+    longitude: Number(source.longitude),
+    addedAt: isString(source.createdAt)
+      ? source.createdAt
+      : isString(source.addedAt)
+        ? source.addedAt
+        : new Date().toISOString(),
+  };
+};
 
-const sanitizeActivity = (activity) => ({
-  id: isString(activity.id) && activity.id.trim() ? activity.id : makeId(),
-  name: isString(activity.name) ? activity.name.trim() : "",
-  idealWeatherCondition: sanitizeCondition(activity.idealWeatherCondition),
-  isOutdoor: Boolean(activity.isOutdoor),
-});
+const sanitizeActivity = (activity = {}) => {
+  const source = activity ?? {};
+  return {
+    id: extractId(source, makeId()),
+    name: isString(source.name) ? source.name.trim() : "",
+    idealWeatherCondition: sanitizeCondition(source.idealWeatherCondition),
+    isOutdoor: Boolean(source.isOutdoor),
+  };
+};
 
-const sanitizePlannerEntry = (entry) => ({
-  id: isString(entry.id) && entry.id.trim() ? entry.id : makeId(),
-  locationId: isString(entry.locationId) ? entry.locationId.trim() : "",
-  activityId: isString(entry.activityId) ? entry.activityId.trim() : "",
-  plannedDate: isString(entry.plannedDate) ? entry.plannedDate : new Date().toISOString(),
-  notes: isString(entry.notes) ? entry.notes.trim() : "",
-});
+const sanitizePlannerEntry = (entry = {}) => {
+  const source = entry ?? {};
+  return {
+    id: extractId(source, makeId()),
+    locationId: extractId(source.locationId),
+    activityId: extractId(source.activityId),
+    plannedDate: isString(source.plannedDate) ? source.plannedDate : new Date().toISOString(),
+    notes: isString(source.notes) ? source.notes.trim() : "",
+  };
+};
 
 const ensureArray = (value) => (Array.isArray(value) ? value : []);
 
+const requestJson = async (path, options = {}) => {
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    headers: {
+      "Content-Type": "application/json",
+      ...(options.headers ?? {}),
+    },
+    ...options,
+  });
+
+  if (!response.ok) {
+    let message = `Request failed: ${response.status}`;
+
+    try {
+      const errorPayload = await response.json();
+      if (isString(errorPayload.message) && errorPayload.message.trim()) {
+        message = errorPayload.message;
+      }
+    } catch {
+      // Leave fallback message when body is empty.
+    }
+
+    throw new Error(message);
+  }
+
+  if (response.status === 204) {
+    return null;
+  }
+
+  return response.json();
+};
+
 const getSeededActivities = async () => {
-  const existing = ensureArray(await readRecord(activitiesStore, ACTIVITIES_KEY, []));
+  const existing = ensureArray(await requestJson("/activities"));
   if (existing.length) return existing.map(sanitizeActivity);
 
-  const seeded = DEFAULT_ACTIVITY_CATALOG.map(sanitizeActivity);
-  await writeRecord(activitiesStore, ACTIVITIES_KEY, seeded);
-  return seeded;
+  const seeded = await Promise.all(
+    DEFAULT_ACTIVITY_CATALOG.map((activity) =>
+      requestJson("/activities", {
+        method: "POST",
+        body: JSON.stringify({
+          name: activity.name,
+          idealWeatherCondition: activity.idealWeatherCondition,
+          isOutdoor: activity.isOutdoor,
+        }),
+      })
+    )
+  );
+
+  return seeded.map(sanitizeActivity);
 };
 
 export const getAllActivities = async () => {
@@ -131,23 +170,20 @@ export const getAllActivities = async () => {
 };
 
 export const getUserPreferences = async () => {
-  const fromDb = await readRecord(userPreferencesStore, USER_PREFERENCES_KEY, null);
+  const fromApi = await requestJson("/user-preference");
 
-  if (fromDb) {
-    return sanitizeUserPreferences(fromDb);
-  }
-
-  const fromLegacy = readLegacySettings();
-  if (fromLegacy) {
-    await writeRecord(userPreferencesStore, USER_PREFERENCES_KEY, fromLegacy);
-    return fromLegacy;
+  if (fromApi) {
+    return sanitizeUserPreferences(fromApi);
   }
 
   const defaults = sanitizeUserPreferences({
     id: USER_PREFERENCES_KEY,
     ...DEFAULT_SETTINGS,
   });
-  await writeRecord(userPreferencesStore, USER_PREFERENCES_KEY, defaults);
+  await requestJson("/user-preference", {
+    method: "PUT",
+    body: JSON.stringify(defaults),
+  });
   return defaults;
 };
 
@@ -158,12 +194,16 @@ export const saveOrUpdateUserPreferences = async (partialPreferences) => {
     ...(partialPreferences ?? {}),
   });
 
-  await writeRecord(userPreferencesStore, USER_PREFERENCES_KEY, next);
-  return next;
+  const saved = await requestJson("/user-preference", {
+    method: "PUT",
+    body: JSON.stringify(next),
+  });
+
+  return sanitizeUserPreferences(saved);
 };
 
 export const getSavedLocations = async () => {
-  const locations = ensureArray(await readRecord(savedLocationsStore, SAVED_LOCATIONS_KEY, []));
+  const locations = ensureArray(await requestJson("/saved-locations"));
   return locations.map(sanitizeSavedLocation);
 };
 
@@ -174,20 +214,21 @@ export const addSavedLocation = async (locationInput) => {
     throw new Error("SavedLocation requires cityName, latitude, and longitude.");
   }
 
-  const current = await getSavedLocations();
-  const withoutDuplicate = current.filter((location) => location.id !== nextLocation.id);
-  const updated = [nextLocation, ...withoutDuplicate];
+  const created = await requestJson("/saved-locations", {
+    method: "POST",
+    body: JSON.stringify({
+      cityName: nextLocation.cityName,
+      latitude: nextLocation.latitude,
+      longitude: nextLocation.longitude,
+    }),
+  });
 
-  await writeRecord(savedLocationsStore, SAVED_LOCATIONS_KEY, updated);
-  return nextLocation;
+  return sanitizeSavedLocation(created);
 };
 
 export const removeSavedLocation = async (locationId) => {
-  const current = await getSavedLocations();
-  const updated = current.filter((location) => location.id !== locationId);
-
-  await writeRecord(savedLocationsStore, SAVED_LOCATIONS_KEY, updated);
-  return updated;
+  await requestJson(`/saved-locations/${locationId}`, { method: "DELETE" });
+  return getSavedLocations();
 };
 
 export const getActivitiesByWeatherCondition = async (weatherCondition) => {
@@ -203,14 +244,15 @@ export const createPlannerEntry = async (entryInput) => {
     throw new Error("PlannerEntry requires locationId and activityId.");
   }
 
-  const current = ensureArray(await readRecord(plannerEntriesStore, PLANNER_ENTRIES_KEY, []));
-  const updated = [nextEntry, ...current.map(sanitizePlannerEntry)];
+  const created = await requestJson("/planner-entries", {
+    method: "POST",
+    body: JSON.stringify(nextEntry),
+  });
 
-  await writeRecord(plannerEntriesStore, PLANNER_ENTRIES_KEY, updated);
-  return nextEntry;
+  return sanitizePlannerEntry(created);
 };
 
 export const getPlannerEntries = async () => {
-  const entries = ensureArray(await readRecord(plannerEntriesStore, PLANNER_ENTRIES_KEY, []));
+  const entries = ensureArray(await requestJson("/planner-entries"));
   return entries.map(sanitizePlannerEntry);
 };
