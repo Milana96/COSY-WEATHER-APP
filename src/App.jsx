@@ -5,7 +5,11 @@ import PlannerScreen from "./components/planner/PlannerScreen";
 import useSettings from "./hooks/useSettings";
 
 export default function App() {
-  const { settings, onUpdateSettings } = useSettings();
+  const { loading, settings, onUpdateSettings } = useSettings();
+
+  if (loading) {
+    return null;
+  }
 
   return (
     <>

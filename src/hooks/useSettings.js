@@ -1,12 +1,31 @@
 import { useEffect, useState } from "react";
-import { readSavedSettings, saveSettings } from "../helpers/settings/storage";
+import { DEFAULT_SETTINGS } from "../helpers/settings/constants";
+import {
+  getUserPreferences,
+  saveOrUpdateUserPreferences,
+} from "../services/weatherPlannerDb";
 
 export default function useSettings() {
-  const [settings, setSettings] = useState(readSavedSettings);
+  const [settings, setSettings] = useState(DEFAULT_SETTINGS);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    saveSettings(settings);
-  }, [settings]);
+    let mounted = true;
+
+    const load = async () => {
+      const persisted = await getUserPreferences();
+      if (!mounted) return;
+
+      setSettings((current) => ({ ...current, ...persisted }));
+      setLoading(false);
+    };
+
+    load();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   useEffect(() => {
     document.body.classList.toggle("theme-light", settings.theme === "light");
@@ -18,9 +37,13 @@ export default function useSettings() {
 
   const onUpdateSettings = (partial) => {
     setSettings((prev) => ({ ...prev, ...partial }));
+    saveOrUpdateUserPreferences(partial).catch(() => {
+      // Keep UI responsive even if persistence fails unexpectedly.
+    });
   };
 
   return {
+    loading,
     settings,
     onUpdateSettings,
   };
