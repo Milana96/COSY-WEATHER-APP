@@ -1,7 +1,19 @@
 import WeatherCanvas from "../weather/WeatherCanvas";
+import { useEffect, useMemo, useState } from "react";
 import useWeather from "../../hooks/useWeather";
 import usePlannerAdvice from "../../hooks/usePlannerAdvice";
+import useWeatherPlannerStore from "../../hooks/useWeatherPlannerStore";
 import "./PlannerScreen.css";
+
+const RAINY_CODES = [51, 53, 55, 56, 57, 61, 63, 65, 66, 67, 80, 81, 82, 95, 96, 99];
+const SNOWY_CODES = [71, 73, 75, 77, 85, 86];
+
+const getConditionFromWeatherCode = (code) => {
+  if (SNOWY_CODES.includes(code)) return "snowy";
+  if (RAINY_CODES.includes(code)) return "rainy";
+  if (code >= 0 && code <= 2) return "sunny";
+  return "cloudy";
+};
 
 export default function PlannerScreen({ settings }) {
   const {
@@ -15,7 +27,70 @@ export default function PlannerScreen({ settings }) {
     onSubmit,
   } = useWeather(settings.defaultLocation);
 
+  const {
+    addLocation,
+    addPlannerEntry,
+    getActivitiesForCondition,
+    activityCatalog,
+    plannerEntries,
+    savedLocations,
+  } = useWeatherPlannerStore();
+  const [activities, setActivities] = useState([]);
+  const [entryNote, setEntryNote] = useState("");
+  const [saveMessage, setSaveMessage] = useState("");
+
   const planner = usePlannerAdvice(weather, settings);
+  const activeCondition = useMemo(() => {
+    return getConditionFromWeatherCode(weather?.current.weatherCode ?? 3);
+  }, [weather?.current.weatherCode]);
+
+  const activityNameById = useMemo(() => {
+    return Object.fromEntries(activityCatalog.map((activity) => [activity.id, activity.name]));
+  }, [activityCatalog]);
+
+  const cityNameByLocationId = useMemo(() => {
+    return Object.fromEntries(savedLocations.map((location) => [location.id, location.cityName]));
+  }, [savedLocations]);
+
+  useEffect(() => {
+    const loadActivities = async () => {
+      const list = await getActivitiesForCondition(activeCondition);
+      setActivities(list);
+    };
+
+    loadActivities();
+  }, [activeCondition, getActivitiesForCondition]);
+
+  const onSaveCurrentCity = async () => {
+    if (!weather) return;
+
+    await addLocation({
+      cityName: weather.city,
+      latitude: weather.latitude,
+      longitude: weather.longitude,
+    });
+    setSaveMessage(`${weather.city} saved to your locations.`);
+  };
+
+  const onCreatePlan = async (activityId) => {
+    if (!weather) return;
+
+    const location = await addLocation({
+      cityName: weather.city,
+      latitude: weather.latitude,
+      longitude: weather.longitude,
+    });
+
+    await addPlannerEntry({
+      locationId: location.id,
+      activityId,
+      plannedDate: new Date().toISOString(),
+      notes: entryNote,
+    });
+
+    setEntryNote("");
+    setSaveMessage("Planner entry created successfully.");
+  };
 
   return (
     <main className={`app visual-${visualMode}`}>
@@ -94,6 +169,69 @@ export default function PlannerScreen({ settings }) {
                   </article>
                 ))}
               </div>
+            </section>
+
+            <section className="planner-card reveal-4">
+              <h3>Smart activity suggestions</h3>
+              <p className="planner-copy">
+                Weather right now is <strong>{activeCondition}</strong>, so these ideas are pre-filtered for you.
+              </p>
+              <div className="search-row" style={{ marginTop: 12 }}>
+                <button type="button" onClick={onSaveCurrentCity}>
+                  Save current city
+                </button>
+              </div>
+              <label htmlFor="planner-note" style={{ display: "block", marginTop: 12 }}>
+                Optional note for new planner entry
+              </label>
+              <input
+                id="planner-note"
+                value={entryNote}
+                onChange={(event) => setEntryNote(event.target.value)}
+                placeholder="Example: Bring sunscreen and water"
+              />
+
+              <div className="planner-days" style={{ marginTop: 12 }}>
+                {activities.map((activity) => (
+                  <article key={activity.id} className="planner-day-item">
+                    <header>
+                      <strong>{activity.name}</strong>
+                      <span>{activity.isOutdoor ? "Outdoor" : "Indoor"}</span>
+                    </header>
+                    <button type="button" onClick={() => onCreatePlan(activity.id)}>
+                      Add to planner
+                    </button>
+                  </article>
+                ))}
+              </div>
+
+              {saveMessage ? <p className="planner-copy" style={{ marginTop: 12 }}>{saveMessage}</p> : null}
+            </section>
+
+            <section className="planner-card reveal-4">
+              <h3>Saved planner history</h3>
+              {!plannerEntries.length ? (
+                <p className="planner-copy">No entries yet. Add one from the suggestion cards above.</p>
+              ) : (
+                <div className="planner-days">
+                  {plannerEntries.slice(0, 6).map((entry) => {
+                    const activityName = activityNameById[entry.activityId] ?? "Unknown activity";
+                    const cityName = cityNameByLocationId[entry.locationId] ?? "Unknown city";
+                    const plannedLabel = new Date(entry.plannedDate).toLocaleDateString();
+
+                    return (
+                      <article key={entry.id} className="planner-day-item">
+                        <header>
+                          <strong>{activityName}</strong>
+                          <span>{plannedLabel}</span>
+                        </header>
+                        <p>{cityName}</p>
+                        {entry.notes ? <p>{entry.notes}</p> : null}
+                      </article>
+                    );
+                  })}
+                </div>
+              )}
             </section>
           </>
         )}
