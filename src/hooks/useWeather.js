@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { getCityCoordinates, getWeatherByCoords, normalizeWeather } from "../weatherApi";
+import { fetchWeatherForApp } from "../services/weatherDataService";
 
 export default function useWeather(defaultLocation) {
   const [cityQuery, setCityQuery] = useState(defaultLocation);
@@ -18,10 +18,7 @@ export default function useWeather(defaultLocation) {
     setError("");
 
     try {
-      const geo = await getCityCoordinates(query);
-      const raw = await getWeatherByCoords(geo.latitude, geo.longitude, "auto");
-      const normalized = normalizeWeather(geo, raw);
-      setWeather(normalized);
+      setWeather(await fetchWeatherForApp(query));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not load weather");
     } finally {

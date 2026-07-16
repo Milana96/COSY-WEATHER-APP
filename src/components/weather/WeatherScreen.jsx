@@ -2,6 +2,7 @@ import Button from "./Button";
 import ButtonSecond from "./Button-Second";
 import StatCard from "./StatCard";
 import WeatherCanvas from "./WeatherCanvas";
+import WeatherDebugPanel from "./WeatherDebugPanel";
 import { convertTemperature, convertWindSpeed } from "../../helpers/weather/conversions";
 import useWeather from "../../hooks/useWeather";
 import "./WeatherScreen.css";
@@ -67,6 +68,8 @@ export default function WeatherScreen({ settings }) {
 
         {!error && weather && (
           <>
+            <WeatherDebugPanel weather={weather} visualMode={visualMode} />
+
             <section className="reveal-1">
               <Button mode={visualMode} detail={weather.current.label} />
             </section>
