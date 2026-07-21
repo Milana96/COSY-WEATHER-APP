@@ -13,11 +13,19 @@ export default function useSettings() {
     let mounted = true;
 
     const load = async () => {
-      const persisted = await getUserPreferences();
-      if (!mounted) return;
+      try {
+        const persisted = await getUserPreferences();
+        if (!mounted) return;
 
-      setSettings((current) => ({ ...current, ...persisted }));
-      setLoading(false);
+        setSettings((current) => ({ ...current, ...persisted }));
+      } catch (error) {
+        if (!mounted) return;
+        setSettings(DEFAULT_SETTINGS);
+      } finally {
+        if (mounted) {
+          setLoading(false);
+        }
+      }
     };
 
     load();
