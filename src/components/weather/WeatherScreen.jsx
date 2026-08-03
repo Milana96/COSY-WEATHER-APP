@@ -3,7 +3,10 @@ import ButtonSecond from "./Button-Second";
 import StatCard from "./StatCard";
 import WeatherCanvas from "./WeatherCanvas";
 import WeatherDebugPanel from "./WeatherDebugPanel";
-import { convertTemperature, convertWindSpeed } from "../../helpers/weather/conversions";
+import {
+  convertTemperature,
+  convertWindSpeed,
+} from "../../helpers/weather/conversions";
 import useWeather from "../../hooks/useWeather";
 import "./WeatherScreen.css";
 
@@ -19,11 +22,15 @@ export default function WeatherScreen({ settings }) {
     onSubmit,
   } = useWeather(settings.defaultLocation);
 
-  const currentTemp = weather ? convertTemperature(weather.current.temp, settings.temperatureUnit) : null;
+  const currentTemp = weather
+    ? convertTemperature(weather.current.temp, settings.temperatureUnit)
+    : null;
   const currentFeelsLike = weather
     ? convertTemperature(weather.current.feelsLike, settings.temperatureUnit)
     : null;
-  const currentWind = weather ? convertWindSpeed(weather.current.wind, settings.windSpeedUnit) : null;
+  const currentWind = weather
+    ? convertWindSpeed(weather.current.wind, settings.windSpeedUnit)
+    : null;
 
   return (
     <main className={`app visual-${visualMode}`}>
@@ -31,6 +38,10 @@ export default function WeatherScreen({ settings }) {
         visual={visualMode}
         weatherCode={weather?.current.weatherCode ?? 0}
         isDay={weather?.current.isDay ?? 1}
+        precipitationMm={weather?.current.precipitation_mm ?? null}
+        precipitationProbability={
+          weather?.current.precipitation_probability ?? null
+        }
         sceneSeed={sceneSeed}
       />
       <div className="noise" />
@@ -48,7 +59,6 @@ export default function WeatherScreen({ settings }) {
       </section>
 
       <aside className="right-column panel weather-panel">
-
         <form className="search-form" onSubmit={onSubmit}>
           <label htmlFor="city">Find city</label>
           <div className="search-row">
@@ -91,8 +101,29 @@ export default function WeatherScreen({ settings }) {
             </section>
 
             <section className="stats-grid reveal-2">
-              <StatCard label="Wind" value={currentWind?.value} unit={` ${currentWind?.label}`} />
-              <StatCard label="Humidity" value={weather.current.humidity} unit="%" />
+              <StatCard
+                label="Wind"
+                value={currentWind?.value}
+                unit={` ${currentWind?.label}`}
+              />
+              <StatCard
+                label="Humidity"
+                value={weather.current.humidity}
+                unit="%"
+              />
+              <StatCard
+                label="Precip"
+                value={
+                  weather.current.precipitation_mm != null
+                    ? `${weather.current.precipitation_mm} mm`
+                    : "—"
+                }
+                unit={
+                  weather.current.precipitation_probability != null
+                    ? ` ${weather.current.precipitation_probability}%`
+                    : ""
+                }
+              />
               <StatCard label="Sunrise" value={weather.current.sunrise} />
               <StatCard label="Sunset" value={weather.current.sunset} />
             </section>
@@ -103,7 +134,13 @@ export default function WeatherScreen({ settings }) {
                 {weather.hourlyForecast.map((item) => (
                   <article key={item.label} className="tiny-card">
                     <span>{item.label}</span>
-                    <strong>{convertTemperature(item.temp, settings.temperatureUnit).value}°</strong>
+                    <strong>
+                      {
+                        convertTemperature(item.temp, settings.temperatureUnit)
+                          .value
+                      }
+                      °
+                    </strong>
                   </article>
                 ))}
               </div>
@@ -116,7 +153,16 @@ export default function WeatherScreen({ settings }) {
                   <article key={item.dayLabel} className="day-item">
                     <span>{item.dayLabel}</span>
                     <strong>
-                      {convertTemperature(item.max, settings.temperatureUnit).value}° / {convertTemperature(item.min, settings.temperatureUnit).value}°
+                      {
+                        convertTemperature(item.max, settings.temperatureUnit)
+                          .value
+                      }
+                      ° /{" "}
+                      {
+                        convertTemperature(item.min, settings.temperatureUnit)
+                          .value
+                      }
+                      °
                     </strong>
                   </article>
                 ))}

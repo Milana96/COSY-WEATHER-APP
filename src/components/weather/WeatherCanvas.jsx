@@ -1,11 +1,24 @@
 import { useEffect, useRef } from "react";
 import { createDrawEngine } from "../../helpers/weatherCanvas/drawEngine";
-import { CANVAS_NUMBERS, WEATHER_CODES } from "../../helpers/weatherCanvas/constants";
-import { createInitialSceneState, resizeScene } from "../../helpers/weatherCanvas/sceneState";
+import {
+  CANVAS_NUMBERS,
+  WEATHER_CODES,
+} from "../../helpers/weatherCanvas/constants";
+import {
+  createInitialSceneState,
+  resizeScene,
+} from "../../helpers/weatherCanvas/sceneState";
 import { runVisualStrategy } from "../../helpers/weatherCanvas/strategies";
 import { buildCanvasTheme } from "../../helpers/weatherCanvas/theme";
 
-export default function WeatherCanvas({ visual, weatherCode = 0, isDay = 1, sceneSeed = "0" }) {
+export default function WeatherCanvas({
+  visual,
+  weatherCode = 0,
+  isDay = 1,
+  sceneSeed = "0",
+  precipitationMm = null,
+  precipitationProbability = null,
+}) {
   const canvasRef = useRef(null);
   const visualMode = visual;
 
@@ -21,7 +34,13 @@ export default function WeatherCanvas({ visual, weatherCode = 0, isDay = 1, scen
     }
 
     const sceneState = createInitialSceneState();
-    const isHeavyRain = WEATHER_CODES.HEAVY_RAIN.includes(weatherCode);
+    const HEAVY_RAIN_MM_THRESHOLD = 4; // mm/hr threshold to force heavy visuals
+    const measuredMm = Number.isFinite(precipitationMm)
+      ? Number(precipitationMm)
+      : null;
+    const isHeavyRain =
+      WEATHER_CODES.HEAVY_RAIN.includes(weatherCode) ||
+      (measuredMm != null && measuredMm >= HEAVY_RAIN_MM_THRESHOLD);
     const isHeavySnow = WEATHER_CODES.HEAVY_SNOW.includes(weatherCode);
     const theme = buildCanvasTheme();
 
@@ -76,5 +95,11 @@ export default function WeatherCanvas({ visual, weatherCode = 0, isDay = 1, scen
     };
   }, [visualMode, weatherCode, isDay, sceneSeed]);
 
-  return <canvas ref={canvasRef} className="weather-canvas" aria-label="Animated weather scene" />;
+  return (
+    <canvas
+      ref={canvasRef}
+      className="weather-canvas"
+      aria-label="Animated weather scene"
+    />
+  );
 }
