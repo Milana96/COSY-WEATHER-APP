@@ -9,9 +9,14 @@ export default function App() {
 
   if (loading) {
     return (
-      <div className="app" style={{ alignItems: "center", justifyContent: "center" }}>
-        <div className="panel" style={{ padding: "1.5rem 2rem", minWidth: "280px" }}>
-          <p style={{ margin: 0, fontSize: "1rem", opacity: 0.9 }}>Loading weather experience…</p>
+      <div className="app is-loading">
+        <div
+          className="panel"
+          style={{ padding: "1.5rem 2rem", minWidth: "280px" }}
+        >
+          <p style={{ margin: 0, fontSize: "1rem", opacity: 0.9 }}>
+            Loading weather experience…
+          </p>
         </div>
       </div>
     );
@@ -22,13 +27,26 @@ export default function App() {
       <Routes>
         <Route
           path="/"
-          element={<DashboardDeck settings={settings} onUpdateSettings={onUpdateSettings} />}
+          element={
+            <DashboardDeck
+              settings={settings}
+              onUpdateSettings={onUpdateSettings}
+            />
+          }
         />
         <Route
           path="/settings"
-          element={<DashboardDeck settings={settings} onUpdateSettings={onUpdateSettings} />}
+          element={
+            <DashboardDeck
+              settings={settings}
+              onUpdateSettings={onUpdateSettings}
+            />
+          }
         />
-        <Route path="/planner" element={<PlannerScreen settings={settings} />} />
+        <Route
+          path="/planner"
+          element={<PlannerScreen settings={settings} />}
+        />
       </Routes>
       <FloatingNav />
     </>
