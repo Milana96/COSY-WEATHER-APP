@@ -106,7 +106,11 @@ export async function getCityCoordinates(query) {
   return data.results[0];
 }
 
-export async function getWeatherByCoords(latitude, longitude, timezone = "auto") {
+export async function getWeatherByCoords(
+  latitude,
+  longitude,
+  timezone = "auto",
+) {
   const params = new URLSearchParams({
     latitude: String(latitude),
     longitude: String(longitude),
@@ -119,8 +123,18 @@ export async function getWeatherByCoords(latitude, longitude, timezone = "auto")
       "relative_humidity_2m",
       "is_day",
     ].join(","),
-    hourly: ["temperature_2m", "weather_code"].join(","),
-    daily: ["sunrise", "sunset", "temperature_2m_max", "temperature_2m_min"].join(","),
+    hourly: [
+      "temperature_2m",
+      "weather_code",
+      "precipitation",
+      "precipitation_probability",
+    ].join(","),
+    daily: [
+      "sunrise",
+      "sunset",
+      "temperature_2m_max",
+      "temperature_2m_min",
+    ].join(","),
     forecast_days: "5",
   });
 
@@ -137,21 +151,46 @@ export function normalizeWeather(geo, weatherRaw) {
   const timezone = weatherRaw.timezone;
 
   const dailyForecast = weatherRaw.daily.time.map((day, index) => ({
-    dayLabel: formatLocalTime(`${day}T00:00:00`, timezone, { weekday: "short" }),
+    dayLabel: formatLocalTime(`${day}T00:00:00`, timezone, {
+      weekday: "short",
+    }),
     max: Math.round(weatherRaw.daily.temperature_2m_max[index]),
     min: Math.round(weatherRaw.daily.temperature_2m_min[index]),
   }));
 
   const nowHourIndex = weatherRaw.hourly.time.findIndex((entry) =>
-    entry.startsWith(weatherRaw.current.time.slice(0, 13))
+    entry.startsWith(weatherRaw.current.time.slice(0, 13)),
   );
 
   const hourlyForecast = weatherRaw.hourly.time
     .slice(Math.max(nowHourIndex, 0), Math.max(nowHourIndex, 0) + 8)
     .map((time, idx) => ({
-      label: idx === 0 ? "Now" : formatLocalTime(time, timezone, { hour: "numeric" }),
-      temp: Math.round(weatherRaw.hourly.temperature_2m[idx + Math.max(nowHourIndex, 0)]),
+      label:
+        idx === 0
+          ? "Now"
+          : formatLocalTime(time, timezone, { hour: "numeric" }),
+      temp: Math.round(
+        weatherRaw.hourly.temperature_2m[idx + Math.max(nowHourIndex, 0)],
+      ),
       code: weatherRaw.hourly.weather_code[idx + Math.max(nowHourIndex, 0)],
+      precipitation_mm: Number.isFinite(
+        weatherRaw.hourly.precipitation?.[idx + Math.max(nowHourIndex, 0)],
+      )
+        ? Number(
+            weatherRaw.hourly.precipitation[idx + Math.max(nowHourIndex, 0)],
+          )
+        : null,
+      precipitation_probability: Number.isFinite(
+        weatherRaw.hourly.precipitation_probability?.[
+          idx + Math.max(nowHourIndex, 0)
+        ],
+      )
+        ? Number(
+            weatherRaw.hourly.precipitation_probability[
+              idx + Math.max(nowHourIndex, 0)
+            ],
+          )
+        : null,
     }));
 
   return {
@@ -168,6 +207,18 @@ export function normalizeWeather(geo, weatherRaw) {
       visual: findVisualWeather(code),
       humidity: weatherRaw.current.relative_humidity_2m,
       wind: Math.round(weatherRaw.current.wind_speed_10m),
+      precipitation_mm:
+        nowHourIndex >= 0 &&
+        Number.isFinite(weatherRaw.hourly.precipitation?.[nowHourIndex])
+          ? Number(weatherRaw.hourly.precipitation[nowHourIndex])
+          : null,
+      precipitation_probability:
+        nowHourIndex >= 0 &&
+        Number.isFinite(
+          weatherRaw.hourly.precipitation_probability?.[nowHourIndex],
+        )
+          ? Number(weatherRaw.hourly.precipitation_probability[nowHourIndex])
+          : null,
       isDay: weatherRaw.current.is_day,
       sunrise: formatLocalTime(weatherRaw.daily.sunrise[0], timezone, {
         hour: "2-digit",
@@ -186,28 +237,36 @@ export function normalizeWeather(geo, weatherRaw) {
 export function normalizeWeatherFromSimulation(simRaw, overrideCityName = "") {
   const timezone = normalizeTimezone(simRaw?.timezone ?? "UTC");
   const current = simRaw?.current ?? {};
-  const currentWeather = Array.isArray(current.weather) ? current.weather[0] ?? {} : {};
-  const weatherId = Number.isFinite(currentWeather.id) ? currentWeather.id : 800;
+  const currentWeather = Array.isArray(current.weather)
+    ? (current.weather[0] ?? {})
+    : {};
+  const weatherId = Number.isFinite(currentWeather.id)
+    ? currentWeather.id
+    : 800;
   const daily = Array.isArray(simRaw?.daily) ? simRaw.daily : [];
   const hourly = Array.isArray(simRaw?.hourly) ? simRaw.hourly : [];
   const nowUnix = Math.floor(Date.now() / 1000);
 
   const currentHourIndex = hourly.findIndex((entry) =>
-    Number.isFinite(entry?.dt) ? entry.dt >= nowUnix : false
+    Number.isFinite(entry?.dt) ? entry.dt >= nowUnix : false,
   );
 
   const startIdx = currentHourIndex >= 0 ? currentHourIndex : 0;
 
-  const hourlyForecast = hourly.slice(startIdx, startIdx + 8).map((entry, idx) => ({
-    label:
-      idx === 0
-        ? "Now"
-        : formatUnixTime(entry.dt, timezone, {
-            hour: "numeric",
-          }),
-    temp: Math.round(entry.temp ?? current.temp ?? 0),
-    code: Number.isFinite(entry?.weather?.[0]?.id) ? entry.weather[0].id : weatherId,
-  }));
+  const hourlyForecast = hourly
+    .slice(startIdx, startIdx + 8)
+    .map((entry, idx) => ({
+      label:
+        idx === 0
+          ? "Now"
+          : formatUnixTime(entry.dt, timezone, {
+              hour: "numeric",
+            }),
+      temp: Math.round(entry.temp ?? current.temp ?? 0),
+      code: Number.isFinite(entry?.weather?.[0]?.id)
+        ? entry.weather[0].id
+        : weatherId,
+    }));
 
   const dailyForecast = daily.slice(0, 7).map((entry) => ({
     dayLabel: formatUnixTime(entry.dt, timezone, { weekday: "short" }),
@@ -225,7 +284,10 @@ export function normalizeWeatherFromSimulation(simRaw, overrideCityName = "") {
       temp: Math.round(current.temp ?? 0),
       feelsLike: Math.round(current.feels_like ?? current.temp ?? 0),
       weatherCode: weatherId,
-      label: currentWeather.description ?? currentWeather.main ?? "Simulated weather",
+      label:
+        currentWeather.description ??
+        currentWeather.main ??
+        "Simulated weather",
       visual: mapOpenWeatherVisual(weatherId),
       humidity: Math.round(current.humidity ?? 0),
       wind: Math.round(current.wind_speed ?? 0),
@@ -236,7 +298,7 @@ export function normalizeWeatherFromSimulation(simRaw, overrideCityName = "") {
         {
           hour: "2-digit",
           minute: "2-digit",
-        }
+        },
       ),
       sunset: formatUnixTime(
         Number.isFinite(current.sunset) ? current.sunset : nowUnix,
@@ -244,7 +306,7 @@ export function normalizeWeatherFromSimulation(simRaw, overrideCityName = "") {
         {
           hour: "2-digit",
           minute: "2-digit",
-        }
+        },
       ),
     },
     dailyForecast,
