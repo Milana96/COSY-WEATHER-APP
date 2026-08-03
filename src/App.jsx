@@ -8,7 +8,13 @@ export default function App() {
   const { loading, settings, onUpdateSettings } = useSettings();
 
   if (loading) {
-    return null;
+    return (
+      <div className="app" style={{ alignItems: "center", justifyContent: "center" }}>
+        <div className="panel" style={{ padding: "1.5rem 2rem", minWidth: "280px" }}>
+          <p style={{ margin: 0, fontSize: "1rem", opacity: 0.9 }}>Loading weather experience…</p>
+        </div>
+      </div>
+    );
   }
 
   return (

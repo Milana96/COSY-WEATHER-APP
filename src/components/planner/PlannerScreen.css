@@ -60,7 +60,8 @@
   display: flex;
   justify-content: space-between;
   gap: 0.7rem;
-  align-items: baseline;
+  align-items: flex-start;
+  flex-wrap: wrap;
 }
 
 .planner-day-item header span {
@@ -82,4 +83,14 @@ body.theme-light .planner-card {
 body.theme-light .planner-day-item {
   border-color: rgba(24, 52, 89, 0.14);
   background: rgba(255, 255, 255, 0.6);
+}
+
+@media (max-width: 640px) {
+  .planner-day-item header {
+    flex-direction: column;
+  }
+
+  .planner-day-item header span {
+    font-size: 0.8rem;
+  }
 }

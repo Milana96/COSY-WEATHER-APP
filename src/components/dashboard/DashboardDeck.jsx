@@ -7,6 +7,7 @@ import WeatherCanvas from "../weather/WeatherCanvas";
 import Button from "../weather/Button";
 import ButtonSecond from "../weather/Button-Second";
 import StatCard from "../weather/StatCard";
+import WeatherCoach from "../weather/WeatherCoach";
 import "../weather/WeatherScreen.css";
 import "../settings/SettingsScreen.css";
 
@@ -77,13 +78,9 @@ export default function DashboardDeck({ settings, onUpdateSettings }) {
         </footer>
       </section>
 
-      <div className="relative w-full overflow-hidden">
-        <div
-          className={`flex w-[200%] transform-gpu will-change-transform transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
-            isSettingsActive ? "translate-x-[-50%]" : "translate-x-0"
-          }`}
-        >
-          <div className="w-1/2 shrink-0">
+      <div className="dashboard-shell">
+        <div className={`dashboard-panels ${isSettingsActive ? "is-settings-active" : ""}`}>
+          <div className="dashboard-panel">
             <aside className="right-column panel weather-panel">
               <form className="search-form" onSubmit={onSubmit}>
                 <label htmlFor="city">Find city</label>
@@ -156,12 +153,14 @@ export default function DashboardDeck({ settings, onUpdateSettings }) {
                       ))}
                     </div>
                   </section>
+
+                  <WeatherCoach weather={weather} cityName={weather.city} />
                 </>
               )}
             </aside>
           </div>
 
-          <div className="w-1/2 shrink-0">
+          <div className="dashboard-panel">
             <aside className="right-column panel settings-panel">
               <section className="settings-group reveal-1">
                 <h2>Temperature Unit</h2>
