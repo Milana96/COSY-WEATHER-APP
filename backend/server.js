@@ -6,6 +6,7 @@ const userPreferenceRoutes = require("./routes/userPreferenceRoutes");
 const savedLocationRoutes = require("./routes/savedLocationRoutes");
 const plannerEntryRoutes = require("./routes/plannerEntryRoutes");
 const activityRoutes = require("./routes/activityRoutes");
+const ragRoutes = require("./routes/ragRoutes");
 
 dotenv.config();
 
@@ -17,6 +18,7 @@ app.use("/api/user-preference", userPreferenceRoutes);
 app.use("/api/saved-locations", savedLocationRoutes);
 app.use("/api/planner-entries", plannerEntryRoutes);
 app.use("/api/activities", activityRoutes);
+app.use("/api/rag", ragRoutes);
 
 app.get("/api/health", (req, res) => {
   res.json({ ok: true, message: "Server is running" });
@@ -25,15 +27,19 @@ app.get("/api/health", (req, res) => {
 const PORT = process.env.PORT || 5000;
 
 const startServer = async () => {
-  try {
-    await connectDB(process.env.MONGODB_URI);
-    app.listen(PORT, () => {
-      console.log(`API server running on http://localhost:${PORT}`);
-    });
-  } catch (err) {
-    console.error("Failed to start server:", err.message);
-    process.exit(1);
+  if (process.env.MONGODB_URI) {
+    try {
+      await connectDB(process.env.MONGODB_URI);
+    } catch (err) {
+      console.warn("MongoDB unavailable, continuing without database:", err.message);
+    }
+  } else {
+    console.warn("MONGODB_URI not set, continuing without database.");
   }
+
+  app.listen(PORT, () => {
+    console.log(`API server running on http://localhost:${PORT}`);
+  });
 };
 
 startServer();
